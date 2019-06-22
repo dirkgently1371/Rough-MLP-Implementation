@@ -7,11 +7,12 @@ data=xlsread('cancer.xlsx');
 n=size(data,1);
 m=size(data,2);
 
+% Network has one hidden layer with 3 neurons.
 n1=m-1;
 n2=3;
 n3=1;
 
-eta=0.05;
+eta=0.05;               % Learning rate
 max_epoch=100;
 a=-1;
 b=1;
@@ -22,22 +23,22 @@ b_u=1;
 alpha=.5;
 beta=.5;
 
-rate_train=0.75;
+rate_train=0.75;           % 75 percents of data have used  for training the network
 num_train=round(rate_train*n);
 num_test=n-num_train;
 
 data_train=data(1:num_train,:);
 data_test=data(num_train+1:end,:);
 
-w1_lower=unifrnd(a_l,b_l,[n2 n1]);
+w1_lower=unifrnd(a_l,b_l,[n2 n1]);   % initial weights for lower weights is between -1 and 0
 net1_lower=zeros(n2,1);
 o1_lower=zeros(n2,1);
 
-w1_upper=unifrnd(a_u,b_u,[n2 n1]);
+w1_upper=unifrnd(a_u,b_u,[n2 n1]);   % initial weights for upper weights is between 0 and 1
 net1_upper=zeros(n2,1);
 o1_upper=zeros(n2,1);
 
-w2=unifrnd(a,b,[n3 n2]);
+w2=unifrnd(a,b,[n3 n2]);             % final layer isn't rough. So initial weigths should be between -1 and 1
 net2=zeros(n3,1);
 o2=zeros(n3,1);
 
@@ -63,6 +64,7 @@ meu=0.1;
 
 for i=1:max_epoch
     for j=1:num_train
+        % forward propagation
         input=data_train(j,1:n1);
         target=data_train(j,1+n1);
         net1_lower=w1_lower*input';
@@ -125,21 +127,18 @@ for i=1:max_epoch
         net1_lower=w1_lower*input';
         o1_upper=logsig(net1_upper);
         o1_lower=logsig(net1_lower);
-        
-%     if o1_lower >= o1_upper
-%               o1_upper=o1_lower;
-%               o1_lower = o1_upper;   
-%     end
 
         o1 = alpha*o1_lower+ beta*o1_upper;
 
         net2=w2*o1;
         o2=net2;
+        
         if o2 <= .5
             o2=0;
         else
             o2=1;
         end
+        
         output_train(j)=o2;
         error_train(j)=target-o2;
     end
@@ -153,22 +152,21 @@ for i=1:max_epoch
         net1_lower=w1_lower*input';
         o1_upper=logsig(net1_upper);
         o1_lower=logsig(net1_lower);
-        
-%        if o1_lower >= o1_upper
-%               o1_upper=o1_lower;
-%               o1_lower = o1_upper;   
-%        end
-%         
+
+%   if you want to tarin alpha and beta of rough neurons, you should uncomment next two lines.      
 %         alpha= alpha-eta*error_train(j)*-1*1*w2*o1_upper;
 %         beta= beta-eta*error_train(j)*-1*1*w2*o1_lower;
+
         o1 = alpha*o1_lower+ beta*o1_upper;
         net2=w2*o1;
         o2=net2;
+        
         if o2 <= .5
             o2=0;
         else
             o2=1;
         end
+        
         output_test(j)=o2;
         error_test(j)=target-o2;
     end
